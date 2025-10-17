@@ -4,12 +4,12 @@ services:
   backend:
     build:
       context: .
-      dockerfile: docker/TranscodingService.Dockerfile
+      dockerfile: docker/Backend.Dockerfile
     image: backend
     container_name: backend
     environment:
       - MEDIA_DIR=/app/media
-      - SERVER_CONFIG_PATH=/app/configs/media_server/1s_segments_8i.yaml
+      - SERVER_CONFIG_PATH=/app/configs/media_server/4s_segments_8i.yaml
     volumes:
       - ./media:/app/media
       - ./src:/app/src
