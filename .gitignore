@@ -1,0 +1,32 @@
+# CMake build artifacts
+/build/
+/CMakeFiles/
+/CMakeCache.txt
+/cmake_install.cmake
+/Makefile
+
+# Compiled Python artifacts
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.so
+
+# Editor/OS clutter
+.DS_Store
+.vscode/
+.idea/
+
+# Dependency submodules
+/dependencies/mpeg-pcc-tmc2/
+
+# Data
+/data/
+/results/
+/media/
+
+/.env
+
+*.ply
+*log.txt
+*md5.txt
