@@ -1,0 +1,113 @@
+# NOTE:
+# This will be run in a docker container. Note that we will mount ./media to /media and ./data to /data
+# in the docker container.
+
+output_dir: /media/4s_segments 
+mpd_template: /app/configs/media_server/mpd_template.xml
+representation_template: /app/configs/media_server/representation_template.xml
+gop_size: 120
+total_frames: 600
+timescale: 30
+
+sequences:
+  loot:
+    data_path: /data/8iVFBv2/loot/Ply 
+    data_template: loot_vox10_%04d.ply
+    start_frame: 1000
+    num_frames: 300
+    encoding_config: "5"
+    offered_configs:
+    - "4"
+    - "3"
+    - "2"
+    - "1"
+    sequence_cfg: /app/dependencies/mpeg-pcc-tmc2/cfg/sequence/loot_vox10.cfg
+
+  redandblack:
+    data_path: /data/8iVFBv2/redandblack/Ply
+    data_template: redandblack_vox10_%04d.ply
+    start_frame: 1450
+    num_frames: 300
+    encoding_config: "5"
+    offered_configs:
+    - "4"
+    - "3"
+    - "2"
+    - "1"
+    sequence_cfg: /app/dependencies/mpeg-pcc-tmc2/cfg/sequence/redandblack_vox10.cfg
+
+  longdress:
+    data_path: /data/8iVFBv2/longdress/Ply
+    data_template: longdress_vox10_%04d.ply
+    start_frame: 1051
+    num_frames: 300
+    encoding_config: "5"
+    offered_configs:
+    - "4"
+    - "3"
+    - "2"
+    - "1"
+    sequence_cfg: /app/dependencies/mpeg-pcc-tmc2/cfg/sequence/longdress_vox10.cfg
+
+  soldier:
+    data_path: /data/8iVFBv2/soldier/Ply
+    data_template: soldier_vox10_%04d.ply
+    start_frame: 0536
+    num_frames: 300
+    encoding_config: "5"
+    offered_configs:
+    - "4"
+    - "3"
+    - "2"
+    - "1"
+    sequence_cfg: /app/dependencies/mpeg-pcc-tmc2/cfg/sequence/soldier_vox10.cfg
+
+transcoder:
+  "1":
+    codec: "libx265"
+    # Geometry
+    geoPreset: ultrafast
+    geoEncThreads: 2
+    geoEncodingMode: "AI"
+    geoQP: 32
+    #Attribute
+    attPreset: ultrafast
+    attEncThreads: 2
+    attEncodingMode: "AI"
+    attQP: 42
+  "2":
+    codec: "libx265"
+    # Geometry
+    geoPreset: ultrafast
+    geoEncThreads: 2
+    geoEncodingMode: "AI"
+    geoQP: 32
+    #Attribute
+    attPreset: ultrafast
+    attEncThreads: 2
+    attEncodingMode: "AI"
+    attQP: 42
+  "3":
+    codec: "libx265"
+    # Geometry
+    geoPreset: ultrafast
+    geoEncThreads: 2
+    geoEncodingMode: "AI"
+    geoQP: 32
+    #Attribute
+    attPreset: ultrafast
+    attEncThreads: 2
+    attEncodingMode: "AI"
+    attQP: 42
+  "4":
+    codec: "libx265"
+    # Geometry
+    geoPreset: ultrafast
+    geoEncThreads: 2
+    geoEncodingMode: "AI"
+    geoQP: 32
+    #Attribute
+    attPreset: ultrafast
+    attEncThreads: 2
+    attEncodingMode: "AI"
+    attQP: 42

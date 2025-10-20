@@ -14,3 +14,4 @@ build-pyrabbit:
 # Start the transcoding server
 start-server:
 	docker compose -f docker-compose.yaml --profile build-only up --build
+	#docker compose -f docker-compose.yaml up --build
