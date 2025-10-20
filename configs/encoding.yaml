@@ -1,0 +1,38 @@
+output_dir: /media/encoded
+duration:
+  - 30
+  - 60
+  - 120
+
+sequences:
+  loot:
+    data_path: /media/8iVFBv2/loot/Ply 
+    data_template: loot_vox10_%04d.ply
+    start_frame: 1000
+    num_frames: 300
+    encoding_config: "5"
+    sequence_cfg: /app/dependencies/mpeg-pcc-tmc2/cfg/sequence/loot_vox10.cfg
+
+  redandblack:
+    data_path: /media/8iVFBv2/redandblack/Ply
+    data_template: redandblack_vox10_%04d.ply
+    start_frame: 1450
+    num_frames: 300
+    encoding_config: "5"
+    sequence_cfg: /app/dependencies/mpeg-pcc-tmc2/cfg/sequence/redandblack_vox10.cfg
+
+  longdress:
+    data_path: /media/8iVFBv2/longdress/Ply
+    data_template: longdress_vox10_%04d.ply
+    start_frame: 1051
+    num_frames: 300
+    encoding_config: "5"
+    sequence_cfg: /app/dependencies/mpeg-pcc-tmc2/cfg/sequence/longdress_vox10.cfg
+
+  soldier:
+    data_path: /media/8iVFBv2/soldier/Ply
+    data_template: soldier_vox10_%04d.ply
+    start_frame: 0536
+    num_frames: 300
+    encoding_config: "5"
+    sequence_cfg: /app/dependencies/mpeg-pcc-tmc2/cfg/sequence/soldier_vox10.cfg

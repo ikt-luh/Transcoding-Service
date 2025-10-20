@@ -1,0 +1,37 @@
+# Data settings
+out_dir: /results/ #TODO
+
+configurations:
+  libx265:
+    preset:
+      - ultrafast
+      - superfast
+      - veryfast
+      - faster
+      - fast
+      - medium
+      - slow
+      - slower
+      - veryslow
+      - placebo
+  kvazaar:
+    preset:
+      - ultrafast
+      - superfast
+      - veryfast
+      - faster
+      - fast
+      - medium
+      - slow
+      - slower
+      - veryslow
+      - placebo
+  nvenc:
+    preset:
+      -p1
+      -p2
+      -p3
+      -p4
+      -p5
+      -p6
+      -p7
