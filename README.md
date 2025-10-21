@@ -34,7 +34,26 @@ In the container, run
 to extend each sequence to 600 frames (looped) and encode them at R5 with segment lengths 1s, 2s and 4s.
 If everything worked correctly, you should have a folder "/media/encoded/Xs_encodings" containing the .bin files.
 
-### Preparing an experiment
+
+## Experiments
+
+### Latency/Transcoding Experiments
+These experiments aim at testing configurations of experiments of the codec. An experiment can be done in the following way
+
+Start a transcoder container (no service, just the tooling):
+```
+    just build-pyrabbit
+    just run-pyrabbit
+```
+
+In the container, 
+```
+    cd /
+    python3 scripts/transcoding_setting_experiment.py /configs/experiments/transcoding_times/settings.yaml
+```
+
+
+### Streaming Experiments
 To prepare a streaming experiment (server-side), we will need to write a server configuration that describes the transcoding server behaviour.
 Examples can be found in TODO.
 
