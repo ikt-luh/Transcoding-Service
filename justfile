@@ -21,6 +21,7 @@ run-pyrabbit:
         -v ./scripts:/scripts:z \
         -v ./media:/media:z \
         -v ./configs:/configs:z \
+        -v ./results:/results:z \
         {{TRANSCODER_IMAGE}}:{{DOCKER_TAG}}
 
 # Start the transcoding server using Docker Compose

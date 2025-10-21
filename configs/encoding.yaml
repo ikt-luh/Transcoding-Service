@@ -1,6 +1,6 @@
 output_dir: /media/encoded
 duration:
-  - 30
+#  - 30
   - 60
   - 120
 
@@ -32,7 +32,7 @@ sequences:
   soldier:
     data_path: /media/8iVFBv2/soldier/Ply
     data_template: soldier_vox10_%04d.ply
-    start_frame: 0536
+    start_frame: 536
     num_frames: 300
     encoding_config: "5"
     sequence_cfg: /app/dependencies/mpeg-pcc-tmc2/cfg/sequence/soldier_vox10.cfg

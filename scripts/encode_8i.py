@@ -54,7 +54,7 @@ def encode_segment_worker(args):
         f"--uncompressedDataPath={ply_input}",
         f"--startFrameNumber={offset}",
         f"--frameCount={gop_size}",
-        "--groupOfFramesSize=30",
+        f"--groupOfFramesSize={gop_size}",
         f"--reconstructedDataPath={recon_out}",
         f"--compressedStreamPath={out_path}",
     ]
