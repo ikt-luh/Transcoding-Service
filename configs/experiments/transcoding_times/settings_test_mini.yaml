@@ -4,9 +4,9 @@ num_repeats: 20
 encoded_data:
   base: /media/encoded/
   segment_sizes:
-    #- 30
+    - 30
     #- 60
-    - 120 
+    #- 120 
   sequences:
     - longdress
     - soldier

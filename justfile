@@ -1,5 +1,6 @@
 # Variables
 TRANSCODER_IMAGE := "pyrabbit-transcoder"
+TRANSCODER_IMAGE_HW := "pyrabbit-transcoder-hw"
 TMC2_IMAGE := "tmc2"
 DOCKER_TAG := "latest"
 
@@ -37,7 +38,7 @@ run-pyrabbit-hw:
         -v ./media:/media:z \
         -v ./configs:/configs:z \
         -v ./results:/results:z \
-        {{TRANSCODER_IMAGE}}:{{DOCKER_TAG}}
+        {{TRANSCODER_IMAGE_HW}}:{{DOCKER_TAG}}
 
 # Start the transcoding server using Docker Compose
 start-server:
