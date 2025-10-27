@@ -15,8 +15,19 @@ encoded_data:
 n_threads:
   - 1
   - 2
+  - 3
   - 4
-  - 6
+rate_configs:
+  geoQP: 
+    - 32
+    - 28
+    - 24
+    - 20
+  attQP:
+    - 42
+    - 37
+    - 32
+    - 27
   
 
 codecs:
@@ -24,32 +35,16 @@ codecs:
     preset:
       - ultrafast
       - superfast
-      - veryfast
       - faster
-      - fast
       - medium
-      - slow
-      - slower
-      - veryslow
-      - placebo
   kvazaar:
     preset:
       - ultrafast
       - superfast
-      - veryfast
       - faster
-      - fast
       - medium
-      - slow
-      - slower
-      - veryslow
-      - placebo
   nvenc:
     preset:
-      -p1
-      -p2
-      -p3
-      -p4
-      -p5
-      -p6
-      -p7
+      - p2
+      - p4
+      - p6

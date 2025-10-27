@@ -15,9 +15,24 @@ pyrabbit *ARGS:
 build-pyrabbit:
     just pyrabbit build
 
+build-pyrabbit-hw:
+    just pyrabbit build-hw
+
 # Run the transcoder container interactively
 run-pyrabbit:
     docker run --rm -it \
+        -v ./scripts:/scripts:z \
+        -v ./media:/media:z \
+        -v ./configs:/configs:z \
+        -v ./results:/results:z \
+        {{TRANSCODER_IMAGE}}:{{DOCKER_TAG}}
+
+run-pyrabbit-hw:
+    docker run --rm -it \
+        --gpus all \
+        --runtime=nvidia \
+        -e NVIDIA_VISIBLE_DEVICES=all \
+        -e NVIDIA_DRIVER_CAPABILITIES=all \
         -v ./scripts:/scripts:z \
         -v ./media:/media:z \
         -v ./configs:/configs:z \

@@ -11,7 +11,7 @@ def perform_experiments(experiment):
     Each segment's time for each repeat is logged in .csv.
     Additionally, transcoded bitstreams are saved once per configuration to file for later processing.
     """
-    out_file = experiment["out_path"]
+    out_path = experiment["out_path"]
     n_threads = experiment["n_thread"]
     codec = experiment["codec"]
     preset = experiment["preset"]
@@ -24,17 +24,21 @@ def perform_experiments(experiment):
     
     # Transcoder Configuration
     transcoder_config = {
+        "codec": codec,
         "attPreset": preset,
         "geoPreset": preset,
         "attEncThreads": n_threads,
         "geoEncThreads": n_threads,
         "attEncodingMode": "AI",
         "geoEncodingMode": "AI",
-        "attQP": 32, #TODO
-        "geoQP": 32, #TODO
+        "attQP": 27, #TODO
+        "geoQP": 20, #TODO
         #"attQP": rate["att"],
         #"geoQP": rate["geo"]
     }
+
+    out_dir = Path(out_path) / "transcoded"
+    out_dir.mkdir(parents=True, exist_ok=True)
 
     t = Transcoder()
 
@@ -46,15 +50,14 @@ def perform_experiments(experiment):
         print("Starting repeats")
 
         for r in range(repeat):
-            print(input_dir)
             for segment in sorted(input_dir.glob("seg_*.bin")):
-                start = time.perf_counter()
                 in_file = segment
+                out_file = out_dir / segment.name
 
-                print("TRANSCODING {in_file} to {out_file}")
+                print(f"TRANSCODING {in_file} to {out_file}")
 
+                start = time.perf_counter()
                 t.transcode(str(in_file), str(out_file), transcoder_config)
-
                 duration = time.perf_counter() - start
 
                 writer.writerow([seq, seg_size, codec, preset, r, segment.name, duration])
@@ -86,7 +89,7 @@ def get_experiments_from_config(config: dict):
                 for codec, presets in config["codecs"].items():
                     for preset in presets["preset"]:
                         input_dir = base_path / str(size) / seq / "5"
-                        out_path = out_dir / f"{seq}_{size}_{codec}_{preset}"
+                        out_path = out_dir / f"{seq}_{size}_{codec}_n{n_thread}_{preset}"
                         csv_path = out_path / "results.csv"
 
                         experiment = {

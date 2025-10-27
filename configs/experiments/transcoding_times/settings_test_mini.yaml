@@ -1,0 +1,25 @@
+# Data settings
+out_dir: /results/transcoding_times_test
+num_repeats: 20
+encoded_data:
+  base: /media/encoded/
+  segment_sizes:
+    #- 30
+    #- 60
+    - 120 
+  sequences:
+    - longdress
+    - soldier
+    - loot
+    - redandblack
+n_threads:
+  - 2
+  
+
+codecs:
+  nvenc:
+    preset:
+      - p2
+  kvazaar:
+    preset:
+      - ultrafast
