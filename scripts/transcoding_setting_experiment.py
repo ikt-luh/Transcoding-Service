@@ -3,7 +3,8 @@ import yaml
 import csv
 import time
 from pathlib import Path
-from rabbit import Transcoder, TranscoderConfig
+#from rabbit import Transcoder, TranscoderConfig
+from transcoder import Transcoder
 
 def perform_experiments(experiment):
     """
@@ -36,12 +37,13 @@ def perform_experiments(experiment):
         #"attQP": rate["att"],
         #"geoQP": rate["geo"]
     }
-    transcoder_config = TranscoderConfig(use_cuda=True, preset="p1")
+    #transcoder_config = TranscoderConfig(use_cuda=True, preset="p1")
 
     out_dir = Path(out_path) / "transcoded"
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    t = Transcoder(transcoder_config)
+    #t = Transcoder(transcoder_config)
+    t = Transcoder()
 
     csv_path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -58,7 +60,7 @@ def perform_experiments(experiment):
                 print(f"TRANSCODING {in_file} to {out_file}")
 
                 start = time.perf_counter()
-                t.transcode(str(in_file), str(out_file))
+                t.transcode(str(in_file), str(out_file), transcoder_config)
                 duration = time.perf_counter() - start
 
                 writer.writerow([seq, seg_size, codec, preset, r, segment.name, duration])

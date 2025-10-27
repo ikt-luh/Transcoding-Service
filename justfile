@@ -22,6 +22,7 @@ build-pyrabbit-hw:
 # Run the transcoder container interactively
 run-pyrabbit:
     docker run --rm -it \
+        -u $(id -u):$(id -g) \
         -v ./scripts:/scripts:z \
         -v ./media:/media:z \
         -v ./configs:/configs:z \
@@ -34,6 +35,7 @@ run-pyrabbit-hw:
         --runtime=nvidia \
         -e NVIDIA_VISIBLE_DEVICES=all \
         -e NVIDIA_DRIVER_CAPABILITIES=all \
+        -u $(id -u):$(id -g) \
         -v ./scripts:/scripts:z \
         -v ./media:/media:z \
         -v ./configs:/configs:z \
