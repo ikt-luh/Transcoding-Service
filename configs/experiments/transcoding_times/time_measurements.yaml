@@ -9,21 +9,24 @@ sequences:
   - longdress
   - loot
 
-segment_sizes: [60, 120, 240]
+segment_sizes: [30, 60, 120]
 
 codecs:
   nvenc:
-    presets: ["p1", "p2", "p3"]
+    presets: ["p1", "p2", "p3", "p4", "p6"]
   x265:
-    presets: ["ultrafast", "medium", "slow"]
+    presets: ["ultrafast", "superfast", "fast", "medium", "slow"]
 
 rate_settings:
   R1:
+    geoQP: 32
+    attQP: 42
+  R2:
+    geoQP: 28
+    attQP: 37
+  R3:
+    geoQP: 24
+    attQP: 32
+  R4:
     geoQP: 20
     attQP: 27
-  R2:
-    geoQP: 24
-    attQP: 31
-  R3:
-    geoQP: 28
-    attQP: 35
