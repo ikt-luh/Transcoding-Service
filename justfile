@@ -53,3 +53,12 @@ download-8i:
     wget https://plenodb.jpeg.org/pc/8ilabs/8iVFBv2.7z && \
     unzip 8iVFBv2.7z && \
     rm 8iVFBv2.7z
+
+decode-vpcc IN_PATH:
+    /pyrabbit/dependencies/mpeg-pcc-tmc2/bin/PccAppDecoder \
+        --compressedStreamPath=./seg_002.bin \
+        --uncompressedDataFolder=./decoded \
+        --startFrameNumber=0 \
+        --inverseColorSpaceConversionConfig=/pyrabbit/dependencies/mpeg-pcc-tmc2/cfg/hdrconvert/yuv420torgb444.cfg \
+        --reconstructedDataPath=dec_%04d.ply \
+        --keepIntermediateFiles=0

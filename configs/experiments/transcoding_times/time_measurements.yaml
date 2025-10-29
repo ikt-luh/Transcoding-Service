@@ -1,0 +1,29 @@
+repeat: 20
+base_input_dir: ./media/encoded
+output_dir: ./results/transcoding_times
+csv_path: ./results/transcoding_times/experiment.csv
+
+sequences:
+  - soldier
+  - redandblack
+  - longdress
+  - loot
+
+segment_sizes: [60, 120, 240]
+
+codecs:
+  nvenc:
+    presets: ["p1", "p2", "p3"]
+  x265:
+    presets: ["ultrafast", "medium", "slow"]
+
+rate_settings:
+  R1:
+    geoQP: 20
+    attQP: 27
+  R2:
+    geoQP: 24
+    attQP: 31
+  R3:
+    geoQP: 28
+    attQP: 35
