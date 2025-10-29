@@ -1,3 +1,4 @@
 [submodule "spirit-pyrabbit"]
 	path = spirit-pyrabbit
-	url = git@gitlab.uni-hannover.de:ve-intern/projects/spirit/spirit-pyrabbit.git
+	url = https://github.com/ikt-luh/SPIRIT-Rabbit-Transcoder 
+	#url = git@gitlab.uni-hannover.de:ve-intern/projects/spirit/spirit-pyrabbit.git
