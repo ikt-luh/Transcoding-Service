@@ -1,113 +1,71 @@
-# NOTE:
-# This will be run in a docker container. Note that we will mount ./media to /media and ./data to /data
-# in the docker container.
-
-output_dir: /media/4s_segments 
-mpd_template: /app/configs/media_server/mpd_template.xml
-representation_template: /app/configs/media_server/representation_template.xml
-gop_size: 120
+output_dir: /media/1s_segments_experiment_3
+mpd_template: /src/templates/mpd_template.xml
+representation_template: /src/templates/representation_template.xml
+gop_size: 30
 total_frames: 600
 timescale: 30
+cache: False
+baseline: True
+
+gpu_plan:
+  2: 4
 
 sequences:
   loot:
-    data_path: /data/8iVFBv2/loot/Ply 
-    data_template: loot_vox10_%04d.ply
-    start_frame: 1000
-    num_frames: 300
-    encoding_config: "5"
+    data_path: "/media/encoded/{}/loot"
+    base_config: "5"
     offered_configs:
     - "4"
     - "3"
     - "2"
     - "1"
-    sequence_cfg: /app/dependencies/mpeg-pcc-tmc2/cfg/sequence/loot_vox10.cfg
-
   redandblack:
-    data_path: /data/8iVFBv2/redandblack/Ply
-    data_template: redandblack_vox10_%04d.ply
-    start_frame: 1450
-    num_frames: 300
-    encoding_config: "5"
+    data_path: "/media/encoded/{}/redandblack"
+    base_config: "5"
     offered_configs:
     - "4"
     - "3"
     - "2"
     - "1"
-    sequence_cfg: /app/dependencies/mpeg-pcc-tmc2/cfg/sequence/redandblack_vox10.cfg
-
   longdress:
-    data_path: /data/8iVFBv2/longdress/Ply
-    data_template: longdress_vox10_%04d.ply
-    start_frame: 1051
-    num_frames: 300
-    encoding_config: "5"
+    data_path: "/media/encoded/{}/longdress"
+    base_config: "5"
     offered_configs:
     - "4"
     - "3"
     - "2"
     - "1"
-    sequence_cfg: /app/dependencies/mpeg-pcc-tmc2/cfg/sequence/longdress_vox10.cfg
-
   soldier:
-    data_path: /data/8iVFBv2/soldier/Ply
-    data_template: soldier_vox10_%04d.ply
-    start_frame: 0536
-    num_frames: 300
-    encoding_config: "5"
+    data_path: "/media/encoded/{}/soldier"
+    base_config: "5"
     offered_configs:
     - "4"
     - "3"
     - "2"
     - "1"
-    sequence_cfg: /app/dependencies/mpeg-pcc-tmc2/cfg/sequence/soldier_vox10.cfg
 
 transcoder:
   "1":
-    codec: "libx265"
-    # Geometry
-    geoPreset: ultrafast
-    geoEncThreads: 2
-    geoEncodingMode: "AI"
     geoQP: 32
-    #Attribute
-    attPreset: ultrafast
-    attEncThreads: 2
-    attEncodingMode: "AI"
     attQP: 42
+    preset: "p6"
+    cuda: true
+    bw_estimate_factor: 0.25
   "2":
-    codec: "libx265"
-    # Geometry
-    geoPreset: ultrafast
-    geoEncThreads: 2
-    geoEncodingMode: "AI"
-    geoQP: 32
-    #Attribute
-    attPreset: ultrafast
-    attEncThreads: 2
-    attEncodingMode: "AI"
-    attQP: 42
+    geoQP: 28
+    attQP: 37
+    preset: "p6"
+    cuda: true
+    bw_estimate_factor: 0.4
   "3":
-    codec: "libx265"
-    # Geometry
-    geoPreset: ultrafast
-    geoEncThreads: 2
-    geoEncodingMode: "AI"
-    geoQP: 32
-    #Attribute
-    attPreset: ultrafast
-    attEncThreads: 2
-    attEncodingMode: "AI"
-    attQP: 42
+    geoQP: 24
+    attQP: 32
+    preset: "p6"
+    cuda: true
+    bw_estimate_factor: 0.66
   "4":
-    codec: "libx265"
-    # Geometry
-    geoPreset: ultrafast
-    geoEncThreads: 2
-    geoEncodingMode: "AI"
-    geoQP: 32
-    #Attribute
-    attPreset: ultrafast
-    attEncThreads: 2
-    attEncodingMode: "AI"
-    attQP: 42
+    geoQP: 20
+    attQP: 27
+    preset: "p6"
+    cuda: true
+    bw_estimate_factor: 0.9

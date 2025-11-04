@@ -24,9 +24,11 @@ __pycache__/
 /data/
 /results/
 /media/
+/dependencies/
 
 /.env
 
+*.txt
 *.ply
 *log.txt
 *md5.txt

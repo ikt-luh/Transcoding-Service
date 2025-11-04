@@ -16,6 +16,8 @@ Further, install 7zip and some other tools:
     sudo apt update && sudo apt install -y p7zip-full wget
 ```
 
+For some experiments, we patched NVIDIA Drivers to circumvent the 8 encoding session limit. Follow the (instrctions)[https://github.com/keylase/nvidia-patch.git]
+
 ### Encoding Data
 First, we need to prepare data for the media server.
 To encode the 8iVFBv2 dataset in quality R5 with a specified segment size to be hosted on the server, first, get the dataset:

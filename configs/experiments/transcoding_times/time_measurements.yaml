@@ -4,9 +4,9 @@ output_dir: ./results/transcoding_times
 csv_path: ./results/transcoding_times/experiment.csv
 
 sequences:
-  - soldier
-  - redandblack
-  - longdress
+  #- soldier
+  #- redandblack
+  #- longdress
   - loot
 
 segment_sizes: [30, 60, 120]

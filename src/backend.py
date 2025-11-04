@@ -3,31 +3,48 @@ import yaml
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse
 import asyncio
+from pathlib import Path
 
 from transcoder_pool import TranscoderPool
+from cache import LRUCache
+from utils.media_setup import prepare_media
 
-MEDIA_DIR = os.environ.get("MEDIA_DIR", "/app/media")
-
-def load_config():
-    config_path = os.getenv("SERVER_CONFIG_PATH")
-
-    with open(config_path, "r") as f:
-        config = yaml.safe_load(f)
-
-    coding_configs = config["transcoder"]
-    sequence_configs = config["sequences"]
-    return coding_configs, sequence_configs
+SERVER_CONFIG_PATH = os.getenv("SERVER_CONFIG_PATH", "/app/config.yaml")
+MEDIA_DIR = os.getenv("MEDIA_DIR", "/app/media")
 
 app = FastAPI()
 
-coding_config, sequence_config = load_config()
+@app.on_event("startup")
+async def startup_event():
+    """ Start up of the media server
+    """
+    global coding_config, sequence_config, worker_pool
 
-worker_pool = TranscoderPool(3)
-worker_pool.start()
+    # Load configuration
+    with open(SERVER_CONFIG_PATH, "r") as f:
+        cfg = yaml.safe_load(f)
+
+    gpu_plan = cfg.get("gpu_plan", {0: 1})
+    coding_config = cfg["transcoder"]
+    sequence_config = cfg["sequences"]
+
+    # Initialize transcoder pool
+    worker_pool = TranscoderPool(gpu_plan, coding_config)
+    worker_pool.start()
+    print(f"TranscoderPool initialized with {len(coding_config)} configs")
+
+    # Prepare media
+    prepare_media(cfg, worker_pool, Path(MEDIA_DIR))
+
+    # Prepare Cache?
+
 
 
 @app.get("/{req_path:path}")
 async def handle_request(req_path: str):
+    """ Handle a request coming from the nginx server.
+    Check if the request is valid, schedule transcoding.
+    """
     media_path = os.path.join(MEDIA_DIR, req_path)
 
     # Serve existing file
@@ -35,7 +52,7 @@ async def handle_request(req_path: str):
         print(f"Serving from storage {media_path} - This should never happen?")
         return FileResponse(media_path)
 
-    # Check validity and get coding config
+    # Check validity and get coding configuration
     src_path, config = get_config(req_path)
     src_path = os.path.join(MEDIA_DIR, src_path)
     if config is None:
@@ -43,11 +60,13 @@ async def handle_request(req_path: str):
 
     worker_pool.submit(src_path, media_path, config)
 
-    timeout = 2.0 # test
+    
+    # Respond to the request (TODO: make config paramters)
+    timeout = 2.0 
     interval = 0.1
     waited = 0.0
-    
     while waited < timeout:
+        # Maybe keep virtual storage of this!
         if os.path.exists(media_path):
             return FileResponse(media_path)
         await asyncio.sleep(interval)

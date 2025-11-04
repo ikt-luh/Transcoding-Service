@@ -1,13 +1,22 @@
-FROM transcoder-base
+FROM pyrabbit-transcoder-hw
 
 RUN pip install --no-cache-dir fastapi uvicorn
 
-RUN mkdir -p /app/media /app/src
-ENV MEDIA_DIR=/app/media
+# Patch nvidia driver
+#WORKDIR /app
+#COPY ./patch.sh ./docker-entrypoint.sh /usr/local/bin/
+#RUN chmod +x /usr/local/bin/patch.sh /usr/local/bin/docker-entrypoint.sh
+
+RUN mkdir -p /media /app/src
+ENV MEDIA_DIR=/media
 ENV SOURCE_DIR=/app/src
 
-ENV PYTHONPATH="/app/src"
 COPY ./src/ /app/src/
+WORKDIR /app/src
 
 EXPOSE 8000
-CMD ["uvicorn", "src.backend:app", "--host", "0.0.0.0", "--port", "8000"]
+
+# Entrypoint for nvidia driver
+#ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
+
+CMD ["uvicorn", "backend:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "1"]

@@ -7,15 +7,18 @@ services:
       dockerfile: docker/Backend.Dockerfile
     image: transcoding-service
     container_name: transcoding-service
-    user: "${UID}:${GID}" 
+    runtime: nvidia
     environment:
       - MEDIA_DIR=/app/media
       - SERVER_CONFIG_PATH=/app/configs/media_server/4s_segments_8i.yaml
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=compute,video,utility
     volumes:
-      - ./media:/app/media
+      - ./media:/media
       - ./configs:/app/configs
     networks:
       - servernet
+    deploy:
 
   media-server:
     build:
