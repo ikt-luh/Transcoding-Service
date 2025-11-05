@@ -16,7 +16,6 @@ WORKDIR /app/src
 
 EXPOSE 8000
 
-# Entrypoint for nvidia driver
 #ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
 
 CMD ["uvicorn", "backend:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "1"]

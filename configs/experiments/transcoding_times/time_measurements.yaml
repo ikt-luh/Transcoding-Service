@@ -4,18 +4,18 @@ output_dir: ./results/transcoding_times
 csv_path: ./results/transcoding_times/experiment.csv
 
 sequences:
-  #- soldier
-  #- redandblack
-  #- longdress
+  - soldier
+  - redandblack
+  - longdress
   - loot
 
 segment_sizes: [30, 60, 120]
 
 codecs:
   nvenc:
-    presets: ["p1", "p2", "p3", "p4", "p6"]
-  x265:
-    presets: ["ultrafast", "superfast", "fast", "medium", "slow"]
+    presets: ["p1", "p2", "p4", "p6"]
+  #x265:
+    #presets: ["ultrafast", "superfast", "fast", "medium", "slow"]
 
 rate_settings:
   R1:

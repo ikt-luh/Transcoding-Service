@@ -43,8 +43,11 @@ run-pyrabbit-hw:
         {{TRANSCODER_IMAGE_HW}}:{{DOCKER_TAG}}
 
 # Start the transcoding server using Docker Compose
-start-server:
-    docker compose -f docker-compose.yaml --profile build-only up --build
+start-server CONFIG_NAME:
+    echo "MEDIA_DIR=/media/{{CONFIG_NAME}}" > .env
+    echo "SERVER_CONFIG_PATH=/configs/media_server/{{CONFIG_NAME}}.yaml" >> .env
+    docker compose --env-file .env -f docker-compose.yaml --profile build-only up --build
+
 
 # Download and extract the 8iVFBv2 dataset
 download-8i:

@@ -1,0 +1,73 @@
+output_dir: /media/baseline_1s
+mpd_template: /app/src/templates/mpd_template.xml
+representation_template: /app/src/templates/representation_template.xml
+gop_size: 30
+total_frames: 600
+timescale: 30
+cache: False
+baseline: False
+
+# Which GPU's to use
+gpu_plan:
+  2: 4
+
+sequences:
+  loot:
+    data_path: "/media/encoded/{}/loot"
+    base_config: "5"
+    offered_configs:
+    - "4"
+    - "3"
+    - "2"
+    - "1"
+  redandblack:
+    data_path: "/media/encoded/{}/redandblack"
+    base_config: "5"
+    offered_configs:
+    - "4"
+    - "3"
+    - "2"
+    - "1"
+  longdress:
+    data_path: "/media/encoded/{}/longdress"
+    base_config: "5"
+    offered_configs:
+    - "4"
+    - "3"
+    - "2"
+    - "1"
+  soldier:
+    data_path: "/media/encoded/{}/soldier"
+    base_config: "5"
+    offered_configs:
+    - "4"
+    - "3"
+    - "2"
+    - "1"
+
+# Settings for offered Rates by the transcoder
+transcoder:
+  "1":
+    geoQP: 32
+    attQP: 42
+    preset: "p6"
+    cuda: true
+    bw_estimate_factor: 0.25
+  "2":
+    geoQP: 28
+    attQP: 37
+    preset: "p6"
+    cuda: true
+    bw_estimate_factor: 0.4
+  "3":
+    geoQP: 24
+    attQP: 32
+    preset: "p6"
+    cuda: true
+    bw_estimate_factor: 0.66
+  "4":
+    geoQP: 20
+    attQP: 27
+    preset: "p6"
+    cuda: true
+    bw_estimate_factor: 0.9

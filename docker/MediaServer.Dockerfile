@@ -1,6 +1,5 @@
 FROM nginx:stable-alpine
 
-COPY src/nginx.conf /etc/nginx/nginx.conf
-COPY src/backend.py /etc/nginx/backend.py
+COPY src/nginx.conf.template /etc/nginx/templates/default.conf.template
 
-EXPOSE 8080
+EXPOSE 8081

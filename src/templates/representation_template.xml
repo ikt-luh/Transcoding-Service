@@ -1,0 +1,21 @@
+<Representation id="$REP_ID$"
+    bandwidth="$BANDWIDTH$"
+    codecs="vpcc.hvc1"
+    mimeType="pointcloud/v3c"
+    xPos="0"
+    yPos="0"
+    zPos="0"
+    xRot="0"
+    yRot="0"
+    zRot="0">
+    <BaseURL>$REP_ID$/</BaseURL>
+    <SegmentTemplate
+        timescale="$TIMESCALE$"
+        startNumber="0"
+        media="seg_$Number%03d$.bin"
+        initialization="init.bin">
+        <SegmentTimeline>
+            $SEGMENT_TIMELINE$
+        </SegmentTimeline>
+    </SegmentTemplate>
+</Representation>

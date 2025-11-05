@@ -1,0 +1,28 @@
+#MIME types for DASH + point cloud bins
+types {
+    application/dash+xml mpd;
+    pointcloud/v3c bin;   
+}
+
+server {
+    listen 8081;
+    root ${MEDIA_DIR};
+
+    # Serve files directly if present
+    location / {
+        autoindex on;
+    }
+
+    # For .bin files, call the transcoder
+    location ~ \.bin$ {
+        try_files $uri @backend;
+    }
+
+
+    # Proxy configuration for backend 
+    location @backend {
+        proxy_pass http://transcoding-service:8000; 
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+    }
+}

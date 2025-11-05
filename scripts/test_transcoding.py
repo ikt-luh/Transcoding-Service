@@ -1,3 +1,4 @@
+import os, sys
 import csv
 import time
 import yaml
@@ -6,6 +7,16 @@ from pathlib import Path
 from itertools import product
 from rabbit import Transcoder, TranscoderConfig
 
+
+class suppress_c_stdout:
+    def __enter__(self):
+        self._devnull = os.open(os.devnull, os.O_WRONLY)
+        self._stdout_fd = sys.stdout.fileno()
+        self._saved = os.dup(self._stdout_fd)
+        os.dup2(self._devnull, self._stdout_fd)
+    def __exit__(self, exc_type, exc_value, traceback):
+        os.dup2(self._saved, self._stdout_fd)
+        os.close(self._devnull)
 
 def perform_experiments(config):
     base_input = Path(config["base_input_dir"])
@@ -53,9 +64,10 @@ def perform_experiments(config):
                             in_file = segment
                             out_file = output_path / segment.name
 
-                            start = time.perf_counter()
-                            transcoder.transcode(in_file, out_file)
-                            duration = time.perf_counter() - start
+                            with suppress_c_stdout():
+                                start = time.perf_counter()
+                                transcoder.transcode(in_file, out_file)
+                                duration = time.perf_counter() - start
 
                             writer.writerow([
                                 seq, seg_size, rate_key,
@@ -77,6 +89,7 @@ def main():
         help="Path to the experiment configuration YAML file."
     )
     args = parser.parse_args()
+    os.environ["CUDA_VISIBLE_DEVICES"] = str(3)
 
     with open(args.config, "r") as f:
         config = yaml.safe_load(f)

@@ -1,12 +1,13 @@
-output_dir: /media/1s_segments_experiment_3
-mpd_template: /src/templates/mpd_template.xml
-representation_template: /src/templates/representation_template.xml
+output_dir: /media/1s_segments_experiment_4
+mpd_template: /app/src/templates/mpd_template.xml
+representation_template: /app/src/templates/representation_template.xml
 gop_size: 30
 total_frames: 600
 timescale: 30
 cache: False
-baseline: True
+baseline: False
 
+# Which GPU's to use
 gpu_plan:
   2: 4
 
@@ -44,6 +45,7 @@ sequences:
     - "2"
     - "1"
 
+# Settings for offered Rates by the transcoder
 transcoder:
   "1":
     geoQP: 32
