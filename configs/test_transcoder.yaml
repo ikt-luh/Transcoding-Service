@@ -1,4 +1,4 @@
-repeat: 20
+repeat: 1 #20
 base_input_dir: ./media/encoded
 output_dir: ./results/transcoding_times
 csv_path: ./results/transcoding_times/experiment.csv
@@ -13,9 +13,9 @@ segment_sizes: [30, 60, 120]
 
 codecs:
   nvenc:
-    presets: ["p1", "p2", "p4", "p6"]
+    presets: ["p2"] #["p1", "p2", "p4", "p6"]
   #x265:
-    #presets: ["ultrafast", "superfast", "fast", "medium", "slow"]
+    #presets: ["ultrafast"]
 
 rate_settings:
   R1:
@@ -28,5 +28,5 @@ rate_settings:
     geoQP: 24
     attQP: 32
   R4:
-    geoQP: 20
-    attQP: 27
+    geoQP: 22
+    attQP: 29

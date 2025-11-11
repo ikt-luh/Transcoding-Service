@@ -13,16 +13,24 @@ server {
         autoindex on;
     }
 
-    # For .bin files, call the transcoder
+    #THIS SETTING IS FOR LOGGING EVERYTHING IN BACKEND
     location ~ \.bin$ {
-        try_files $uri @backend;
-    }
-
-
-    # Proxy configuration for backend 
-    location @backend {
-        proxy_pass http://transcoding-service:8000; 
+        proxy_pass http://transcoding-service:8000;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Request-URI $request_uri;
     }
+
+    # THIS WOULD BE PRODUCTION CODE
+    ## For .bin files, call the transcoder
+    #location ~ \.bin$ {
+        #try_files $uri @backend;
+    #}
+
+    ## Proxy configuration for backend 
+    #location @backend {
+        #proxy_pass http://transcoding-service:8000; 
+        #proxy_set_header Host $host;
+        #proxy_set_header X-Real-IP $remote_addr;
+    #}
 }

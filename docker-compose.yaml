@@ -2,6 +2,7 @@ version: "3.9"
 
 services:
   transcoding-service:
+    #user: "${UID}:${GID}"
     build:
       context: .
       dockerfile: docker/Backend.Dockerfile
@@ -16,11 +17,15 @@ services:
     volumes:
       - ./media:/media
       - ./configs:/configs
+      - ./results:/results
+    logging:
+      driver: "none"
     networks:
       - servernet
     deploy:
 
   media-server:
+    #user: "${UID}:${GID}"
     build:
       context: .
       dockerfile: docker/MediaServer.Dockerfile
@@ -34,6 +39,8 @@ services:
     volumes:
       - ./media:/media:ro
       #- ./src/nginx.conf.template:/etc/nginx/templates/default.conf.template:ro
+    logging:
+      driver: "none"
     networks:
       - servernet
     depends_on:

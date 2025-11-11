@@ -1,11 +1,17 @@
-output_dir: /media/baseline_2s
+results_dir: /results/baseline_4s
+output_dir: /media/baseline_4s
+
 mpd_template: /app/src/templates/mpd_template.xml
 representation_template: /app/src/templates/representation_template.xml
-gop_size: 30
-total_frames: 600
+gop_size: 120
+total_frames: 2400
 timescale: 30
-cache: False
-baseline: False
+
+baseline: True
+
+mode: "per_config"
+cache_size: 0 # 10 [MB] is roughly 15 objects, 0 is off
+serve_lower: true
 
 # Which GPU's to use
 gpu_plan:
@@ -13,7 +19,7 @@ gpu_plan:
 
 sequences:
   loot:
-    data_path: "/media/encoded/{}/loot"
+    data_path: "/media/encoded_80s/{}/loot"
     base_config: "5"
     offered_configs:
     - "4"
@@ -21,7 +27,7 @@ sequences:
     - "2"
     - "1"
   redandblack:
-    data_path: "/media/encoded/{}/redandblack"
+    data_path: "/media/encoded_80s/{}/redandblack"
     base_config: "5"
     offered_configs:
     - "4"
@@ -29,7 +35,7 @@ sequences:
     - "2"
     - "1"
   longdress:
-    data_path: "/media/encoded/{}/longdress"
+    data_path: "/media/encoded_80s/{}/longdress"
     base_config: "5"
     offered_configs:
     - "4"
@@ -37,7 +43,7 @@ sequences:
     - "2"
     - "1"
   soldier:
-    data_path: "/media/encoded/{}/soldier"
+    data_path: "/media/encoded_80s/{}/soldier"
     base_config: "5"
     offered_configs:
     - "4"
@@ -50,24 +56,24 @@ transcoder:
   "1":
     geoQP: 32
     attQP: 42
-    preset: "p6"
+    preset: "p2"
     cuda: true
-    bw_estimate_factor: 0.25
+    bw_estimate_factor: 0.32
   "2":
     geoQP: 28
     attQP: 37
-    preset: "p6"
+    preset: "p2"
     cuda: true
-    bw_estimate_factor: 0.4
+    bw_estimate_factor: 0.48
   "3":
     geoQP: 24
     attQP: 32
-    preset: "p6"
+    preset: "p2"
     cuda: true
-    bw_estimate_factor: 0.66
+    bw_estimate_factor: 0.67
   "4":
     geoQP: 20
     attQP: 27
-    preset: "p6"
+    preset: "p2"
     cuda: true
     bw_estimate_factor: 0.9

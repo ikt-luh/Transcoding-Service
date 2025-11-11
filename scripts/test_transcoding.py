@@ -5,7 +5,7 @@ import yaml
 import argparse
 from pathlib import Path
 from itertools import product
-from rabbit import Transcoder, TranscoderConfig
+from rabbit import Transcoder, TranscoderConfig, BitstreamIO
 
 
 class suppress_c_stdout:
@@ -36,7 +36,8 @@ def perform_experiments(config):
             "sequence", "segment_size", "rate_key",
             "codec", "preset",
             "geoQP", "attQP",
-            "repeat_idx", "segment_name", "duration_s"
+            "repeat_idx", "segment_name", "duration_s",
+            "in_bytes", "out_bytes", "reduction_ratio"
         ])
 
         for seq, seg_size, rate_key in product(sequences, segment_sizes, rate_settings.keys()):
@@ -54,6 +55,7 @@ def perform_experiments(config):
                         preset=preset,
                     )
                     transcoder = Transcoder(tx_config)
+                    bitstream_io = BitstreamIO()
 
                     input_dir = base_input / str(seg_size) / seq / "5"
                     output_path = output_dir / seq / f"{codec}_{preset}_{rate_key}_seg{seg_size}"
@@ -64,18 +66,29 @@ def perform_experiments(config):
                             in_file = segment
                             out_file = output_path / segment.name
 
-                            with suppress_c_stdout():
-                                start = time.perf_counter()
-                                transcoder.transcode(in_file, out_file)
-                                duration = time.perf_counter() - start
+
+                            ctxs = bitstream_io.read(in_file)
+
+                            start = time.perf_counter()
+                            transcoder.transcode_contexts(ctxs)
+                            duration = time.perf_counter() - start
+
+                            bitstream_io.write(ctxs, out_file)
+                            
+                            in_bytes = in_file.stat().st_size
+                            out_bytes = out_file.stat().st_size
+
+                            reduction_ratio = out_bytes / in_bytes if in_bytes > 0 else 1.0
 
                             writer.writerow([
                                 seq, seg_size, rate_key,
                                 codec, preset,
                                 geo_qp, att_qp,
-                                r, segment.name, duration
+                                r, segment.name, duration,
+                                in_bytes, out_bytes, reduction_ratio
                             ])
                             f.flush()
+
 
                     transcoder.close()
 

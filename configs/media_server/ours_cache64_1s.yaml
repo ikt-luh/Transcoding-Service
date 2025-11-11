@@ -1,17 +1,15 @@
-results_dir: /results/baseline_1s
-output_dir: /media/baseline_1s
+results_dir: /results/ours_cache64_1s
+output_dir: /media/ours_cache64_1s
 
 mpd_template: /app/src/templates/mpd_template.xml
 representation_template: /app/src/templates/representation_template.xml
 gop_size: 30
 total_frames: 2400
 timescale: 30
+baseline: False
 
-baseline: true
-
-mode: "dynamic"
-cache_size: 0
-serve_lower: false
+cache_size: 64 # 10 [MB] is roughly 15 objects / 0 means no cache
+serve_lower: true
 
 # Which GPU's to use
 gpu_plan:

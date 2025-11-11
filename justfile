@@ -46,8 +46,19 @@ run-pyrabbit-hw:
 start-server CONFIG_NAME:
     echo "MEDIA_DIR=/media/{{CONFIG_NAME}}" > .env
     echo "SERVER_CONFIG_PATH=/configs/media_server/{{CONFIG_NAME}}.yaml" >> .env
+    echo "UID=$$(id -u)" >> .env
+    echo "GID=$$(id -g)" >> .env
     docker compose --env-file .env -f docker-compose.yaml --profile build-only up --build
 
+start-server-d CONFIG_NAME:
+    echo "MEDIA_DIR=/media/{{CONFIG_NAME}}" > .env
+    echo "SERVER_CONFIG_PATH=/configs/media_server/{{CONFIG_NAME}}.yaml" >> .env
+    echo "UID=$$(id -u)" >> .env
+    echo "GID=$$(id -g)" >> .env
+    docker compose --env-file .env -f docker-compose.yaml --profile build-only up --build -d
+
+clean:
+	docker stop $(docker ps -q)
 
 # Download and extract the 8iVFBv2 dataset
 download-8i:

@@ -2,177 +2,193 @@ import time
 import os
 import uuid
 import threading
-import multiprocessing
-from queue import Empty
+from queue import Queue
+from multiprocessing import Process, Queue as MPQueue
 
-from rabbit import Transcoder, TranscoderConfig
+from rabbit import Transcoder, TranscoderConfig, BitstreamIO
 
-def _worker_loop_dynamic(gpu_id: int, queue: multiprocessing.Queue, configs: dict, done_queue):
-    """Worker that can switch config per job (dynamic mode)."""
-    try:
-        os.environ["CUDA_VISIBLE_DEVICES"] = str(gpu_id)
-        transcoder = Transcoder()  
-    except Exception as e:
-        print(f"[Worker][GPU {gpu_id}] Failed to init transcoder: {e}", flush=True)
-        return
-    
-    while True:
-        job = queue.get()
-        if job is None:
-            print(f"[Pool][Worker][GPU {gpu_id}] shutting down.")
-            break
 
-        job_id, cfg_id, src_path, out_path = job
-        cfg_dict = configs[cfg_id]
+def _worker_process(gpu_id, worker_id, config, job_queue: MPQueue, done_queue: MPQueue, log_queue: MPQueue):
+    """
+    Each worker is its own process.
+    Internally pipelined:
+    PCCContext never leaves this process, only file paths do.
+    """
+    os.environ["CUDA_VISIBLE_DEVICES"] = str(gpu_id)
 
-        transcoder.set_config(
-            TranscoderConfig(
-                use_cuda=cfg_dict.get("cuda", False),
-                geometry_qp=cfg_dict.get("geoQP", 32),
-                attribute_qp=cfg_dict.get("attQP", 32),
-                preset=cfg_dict.get("preset", "ultrafast"),
-                gpuID=0,
-            )
+    default_config = config["1"]
+    transcoder = Transcoder(
+        TranscoderConfig(
+            use_cuda=default_config.get("cuda", True),
+            geometry_qp=default_config.get("geoQP", 32),
+            attribute_qp=default_config.get("attQP", 32),
+            preset=default_config.get("preset", "p2"),
+            gpuID=gpu_id,
         )
+    )
 
-        try:
-            print(f"[Pool][GPU {gpu_id}] ({cfg_id}) Transcoding {src_path} -> {out_path}")
-            transcoder.transcode(src_path, out_path)
+    bitio = BitstreamIO()
+
+    q_decode = Queue(maxsize=3)
+    q_gpu = Queue(maxsize=3)
+
+    def log(event, job_id=None):
+        log_queue.put({
+            "timestamp": time.time(),
+            "worker_gpu": gpu_id,
+            "worker_id": worker_id,
+            "event": event,
+            "job_id": job_id,
+            "q_decode": q_decode.qsize(),
+            "q_gpu": q_gpu.qsize(),
+        })
+
+    def reader():
+        while True:
+            item = job_queue.get()
+            if item is None:
+                q_decode.put(None)
+                return
+
+            job_id, src_path, out_path, config_id = item
+            log("reader_start", job_id)
+
+            # CPU decode → PCCContexts
+            contexts = bitio.read(src_path)
+            log("reader_end", job_id)
+            q_decode.put((job_id, contexts, out_path, config_id))
+
+    def gpu():
+        while True:
+            item = q_decode.get()
+            if item is None:
+                q_gpu.put(None)
+                return
+
+            job_id, contexts, out_path, config_id = item
+            log("gpu_start", job_id)
+
+            # Apply override config if given
+            cfg_dict = config[config_id]
+            transcoder.set_config(
+                TranscoderConfig(
+                    use_cuda=cfg_dict.get("cuda", cfg_dict.get("cuda", False)),
+                    geometry_qp=cfg_dict.get("geoQP", cfg_dict.get("geoQP", 32)),
+                    attribute_qp=cfg_dict.get("attQP", cfg_dict.get("attQP", 32)),
+                    preset=cfg_dict.get("preset", cfg_dict.get("preset", "ultrafast")),
+                    gpuID=gpu_id,
+                )
+                )
+
+            # GPU transcode stage
+            transcoder.transcode_contexts(contexts)
+
+            log("gpu_end", job_id)
+            q_gpu.put((job_id, contexts, out_path))
+
+    def writer():
+        while True:
+            item = q_gpu.get()
+            if item is None:
+                return
+
+            job_id, contexts, out_path = item
+            log("writer_start", job_id)
+
+            # CPU write stage
+            bitio.write(contexts, out_path)
+
+            log("writer_end", job_id)
+
             done_queue.put(job_id)
-        except Exception as e:
-            print(f"[Pool][GPU {gpu_id}] Error on job {job_id}: {e}")
-            done_queue.put(job_id)
 
-def _worker_loop_per_config(cfg_id: str, cfg_dict: dict, gpu_id: int, queue: multiprocessing.Queue, done_queue):
-    """Worker loop: run transcoder jobs for one configuration on one GPU."""
-    try:
-        os.environ["CUDA_VISIBLE_DEVICES"] = str(gpu_id)
+    threads = [
+        threading.Thread(target=reader, daemon=True),
+        threading.Thread(target=gpu, daemon=True),
+        threading.Thread(target=writer, daemon=True),
+    ]
 
-        transcoder = Transcoder()
-        tx_cfg = TranscoderConfig(
-            use_cuda=cfg_dict.get("cuda", False),
-            geometry_qp=cfg_dict.get("geoQP", 32),
-            attribute_qp=cfg_dict.get("attQP", 32),
-            preset=cfg_dict.get("preset", "ultrafast"),
-            gpuID=0,
-        )
-        transcoder.set_config(tx_cfg)
-    except Exception as e:
-        print(f"[Worker-{cfg_id}][GPU {gpu_id}] Failed to init transcoder: {e}", flush=True)
-        return
-
-    print(f"[Worker-{cfg_id}][GPU {gpu_id}] ready.")
-    while True:
-        item = queue.get()
-        if item is None:
-            print(f"[Worker-{cfg_id}][GPU {gpu_id}] shutting down.")
-            break
-
-        job_id, src_path, out_path = item
-        try:
-            print(f"[Worker-{cfg_id}][GPU {gpu_id}] Transcoding {src_path} to {out_path}", flush=True)
-            transcoder.transcode(src_path, out_path)
-            done_queue.put(job_id)
-        except Exception as e:
-            print(f"[Worker-{cfg_id}][GPU {gpu_id}] Error on job {job_id}: {e}", flush=True)
-            done_queue.put(job_id)
+    for t in threads:
+        t.start()
+    for t in threads:
+        t.join()
 
 
 class TranscoderPool:
-    """Multi-GPU transcoder pool managing per-configuration queues and workers."""
+    """
+    Process pool with in-process decode→GPU→encode pipeline.
+    No PCCContext ever crosses process boundaries.
+    """
 
-    def __init__(self, gpu_plan: dict[int, int], configs: dict[str, dict], mode="per_config"):
+    def __init__(self, gpu_plan: dict[int, int], configs, logger):
         self.gpu_plan = gpu_plan or {0: 1}
         self.configs = configs
+        self.threshold = 30
 
-        self.done_queue = multiprocessing.Queue()
-        # Dynamic or static pool mode
-        self.mode = mode
-        assert mode in ("per_config", "dynamic")
-        if self.mode == "per_config":
-            self.queues = {cfg_id: multiprocessing.Queue(maxsize=100) for cfg_id in configs}
-            self.procs = {cfg_id: [] for cfg_id in configs}
-        else:
-            self.queue = multiprocessing.Queue(maxsize=400)
-            self.procs = []
+        self.job_queue = MPQueue()
+        self.done_queue = MPQueue()
+        self.processes = []
 
-        self.lock = threading.Lock()
+        self.logger = logger
+        self.log_queue = logger.queue  # <-- use logger's MP-safe queue
 
     def start(self):
-        total_workers = sum(self.gpu_plan.values())
-        print(f"[Pool] Starting {total_workers} workers, mode={self.mode}")
-
-        gpu_slots = []
-        for gpu_id, cap in self.gpu_plan.items():
-            gpu_slots.extend([gpu_id] * cap)
-
-        if self.mode == "dynamic":
-            self._start_dynamic(gpu_slots)
-        else: 
-            self._start_per_config(gpu_slots, total_workers)
-
-    def _start_dynamic(self, gpu_slots):
-        for i, gpu_id in enumerate(gpu_slots):
-            p = multiprocessing.Process(
-                target=_worker_loop_dynamic,
-                args=(gpu_id, self.queue, self.configs, self.done_queue),
-            )
-            p.start()
-            self.procs.append(p)
-            print(f"[Pool] Started dynamic worker {i} on GPU {gpu_id}")
-
-    def _start_per_config(self, gpu_slots, total_workers):
-        cfg_ids = list(self.configs.keys())
-        base = total_workers // len(cfg_ids)
-        remainder = total_workers % len(cfg_ids)
-        idx = 0
-
-        for i, cfg_id in enumerate(cfg_ids):
-            n = base + (1 if i < remainder else 0)
-            for _ in range(n):
-                gpu_id = gpu_slots[idx % len(gpu_slots)]
-                p = multiprocessing.Process(
-                    target=_worker_loop_per_config,
-                    args=(cfg_id, self.configs[cfg_id], gpu_id, self.queues[cfg_id], self.done_queue),
+        for gpu_id, n_workers in self.gpu_plan.items():
+            for worker_id in range(n_workers):
+                p = Process(
+                    target=_worker_process,
+                    args=(gpu_id, worker_id, self.configs, self.job_queue, self.done_queue, self.log_queue),
+                    daemon=True,
                 )
                 p.start()
-                self.procs[cfg_id].append(p)
-                idx += 1
-                print(f"[Pool] Started per-config worker {i} with config {cfg_id} on GPU {gpu_id}")
+                self.processes.append(p)
+                print(f"[Pool] Worker started ID={worker_id}, gpu={gpu_id}")
 
     def stop(self):
-        """ Shutdown all workers. """
-        # Shutdown is done by filling queues with None and joining procs.
-        if self.mode == "dynamic":
-            for _ in range(len(self.procs)):
-                self.queue.put(None)
-            for p in self.procs:
-                p.join()
-        else:
-            for cfg_id, q in self.queues.items():
-                for _ in self.procs[cfg_id]:
-                    q.put(None)
-            for plist in self.procs.values():
-                for p in plist:
-                    p.join()
-
+        for _ in self.processes:
+            self.job_queue.put(None)
+        for p in self.processes:
+            p.join()
         print("[Pool] Shutdown complete.")
 
-
     def submit(self, cfg_id: str, src_path: str, out_path: str):
-        job_id = str(uuid.uuid4())
-        with self.lock:
-            if self.mode == "dynamic":
-                self.queue.put_nowait((job_id, cfg_id, src_path, out_path))
-                print(f"[Pool] Submitted Job {job_id} with dynamic queue ({cfg_id})")
-            else:
-                self.queues[cfg_id].put_nowait((job_id, src_path, out_path))
-                print(f"[Pool] Submitted Job {job_id} with cfg {cfg_id}")
+        job_id = uuid.uuid4().hex
+        self.job_queue.put((job_id, src_path, out_path, cfg_id))
+        self.log_queue.put({
+            "timestamp": time.time(),
+            "worker_gpu": None,
+            "worker_id": None,
+            "event": "submitted",
+            "job_id": job_id,
+            "q_decode": None,
+            "q_gpu": None,
+        })
         return job_id
 
+    def get_done(self, timeout=None):
+        return self.done_queue.get(timeout=timeout)
 
-    def wait_all(self, job_ids):
-        remaining = set(job_ids)
-        while remaining:
-            job_id = self.done_queue.get()  # blocks
-            remaining.discard(job_id)
+    def queue_full(self):
+        return self.job_queue.qsize() >= self.threshold
+
+    def current_queue_length(self):
+        return self.job_queue.qsize()
+
+    def wait_all(self, job_ids, timeout=None):
+        """
+        Block until all job_ids have completed.
+        """
+        pending = set(job_ids)
+        start = time.time()
+
+        while pending:
+            try:
+                job_id = self.done_queue.get(timeout=0.1)
+                pending.discard(job_id)
+            except Exception:
+                pass
+
+            if timeout and (time.time() - start) > timeout:
+                return False
+
+        return True

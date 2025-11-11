@@ -132,12 +132,15 @@ def prepare_segments(cfg: dict, transcoder_pool: object):
                     dst_file = os.path.join(target_path_transcoded, file)
                     os.makedirs(target_path_transcoded, exist_ok=True)
 
-                    try:
-                        print(config_id, src_file, dst_file)
-                        job_id = transcoder_pool.submit(config_id, str(src_file), str(dst_file))
-                        pending.append(job_id)
-                    except Exception as e:
-                        print("Failed to schedule")
+                    if not os.path.exists(dst_file):
+                        try:
+                            print(config_id, src_file, dst_file)
+                            job_id = transcoder_pool.submit(config_id, str(src_file), str(dst_file))
+                            pending.append(job_id)
+                        except Exception as e:
+                            print("Failed to schedule")
+                    else:
+                        print(f"Path {dst_file} exists.")
 
                 # Wait for all configs to be done.
                 transcoder_pool.wait_all(pending)
