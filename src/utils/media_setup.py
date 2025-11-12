@@ -1,4 +1,5 @@
 import os
+import asyncio
 import shutil
 import subprocess
 from pathlib import Path
@@ -9,14 +10,14 @@ TMC2_BIN = "/app/dependencies/mpeg-pcc-tmc2/bin/PccAppEncoder"
 PREPARE_SCRIPT = "/app/prepare_media.py"
 
 
-def prepare_media(cfg: dict, transcoder_pool: object, media_dir: Path):
+async def prepare_media(cfg: dict, transcoder_pool: object, media_dir: Path):
     """
     Prepare media for streaming:
       - Verify and copy encoded sources
       - Generate MPDs if missing
       - Optionally transcode baseline representation to all others
     """
-    prepare_segments(cfg, transcoder_pool)
+    await prepare_segments(cfg, transcoder_pool)
     generate_mpd(cfg)
 
 
@@ -101,11 +102,12 @@ def generate_mpd(cfg):
 
         print(f"[{seq}] MPD written to {mpd_path}")
 
-def prepare_segments(cfg: dict, transcoder_pool: object):
+async def prepare_segments(cfg: dict, transcoder_pool: object):
     seq_config = cfg["sequences"]
 
     for seq, seq_dict in seq_config.items():
         base_config = seq_dict["base_config"]
+        pre_cfg = seq_dict.get("pre_encoded")
         src_path = os.path.join(seq_dict["data_path"].format(cfg["gop_size"]), str(base_config))
         target_path = os.path.join(cfg["output_dir"], seq, str(base_config))
         
@@ -125,8 +127,19 @@ def prepare_segments(cfg: dict, transcoder_pool: object):
             if not os.path.exists(dst_file):
                 shutil.copy2(src_file, dst_file)
 
+            if pre_cfg:
+                target_folder = os.path.join(cfg["output_dir"], seq, pre_cfg)
+                dst_file_low = os.path.join(target_folder, file)
+                if not os.path.exists(dst_file_low):
+                    print(f"[prepare] Pre-encode seq={seq} file={file} → repr={pre_cfg}")
+                    job_id = transcoder_pool.submit(pre_cfg, src_file, dst_file_low)
+                    ok = await transcoder_pool.wait_job(job_id, timeout=120)
+                    if not ok:
+                        raise RuntimeError(f"Pre-encoding timeout: {seq}/{file} to repr {pre_cfg}")
+
+
             if cfg["baseline"]:
-                pending = []
+                job_ids = []
                 for config_id in seq_dict["offered_configs"]:
                     target_path_transcoded = os.path.join(cfg["output_dir"], seq, str(config_id))
                     dst_file = os.path.join(target_path_transcoded, file)
@@ -136,11 +149,14 @@ def prepare_segments(cfg: dict, transcoder_pool: object):
                         try:
                             print(config_id, src_file, dst_file)
                             job_id = transcoder_pool.submit(config_id, str(src_file), str(dst_file))
-                            pending.append(job_id)
+                            job_ids.append(job_id)
                         except Exception as e:
                             print("Failed to schedule")
                     else:
                         print(f"Path {dst_file} exists.")
 
-                # Wait for all configs to be done.
-                transcoder_pool.wait_all(pending)
+                # Wait for all submitted jobs for this segment
+                for job_id in job_ids:
+                    ok = await transcoder_pool.wait_job(job_id, timeout=60)
+                    if not ok:
+                        raise RuntimeError(f"Transcoding timeout for job {job_id}")

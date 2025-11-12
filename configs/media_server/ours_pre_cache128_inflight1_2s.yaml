@@ -1,15 +1,15 @@
-results_dir: /results/ours_cache0_4s
-output_dir: /media/ours_cache0_4s
+results_dir: /results/ours_pre_cache128_inflight1_2s
+output_dir: /media/ours_pre_cache128_inflight1_2s
 
 mpd_template: /app/src/templates/mpd_template.xml
 representation_template: /app/src/templates/representation_template.xml
-gop_size: 120
+gop_size: 60
 total_frames: 2400
 timescale: 30
 baseline: False
 
-cache_size: 0 # 10 [MB] is roughly 15 objects / 0 means no cache
-serve_lower: true
+cache_size: 128 # 10 [MB]  0 means no cache
+prefetch_depth: 1
 
 # Which GPU's to use
 gpu_plan:
@@ -19,6 +19,7 @@ sequences:
   loot:
     data_path: "/media/encoded_80s/{}/loot"
     base_config: "5"
+    pre_encoded: "1"
     offered_configs:
     - "4"
     - "3"
@@ -27,6 +28,7 @@ sequences:
   redandblack:
     data_path: "/media/encoded_80s/{}/redandblack"
     base_config: "5"
+    pre_encoded: "1"
     offered_configs:
     - "4"
     - "3"
@@ -35,6 +37,7 @@ sequences:
   longdress:
     data_path: "/media/encoded_80s/{}/longdress"
     base_config: "5"
+    pre_encoded: "1"
     offered_configs:
     - "4"
     - "3"
@@ -43,6 +46,7 @@ sequences:
   soldier:
     data_path: "/media/encoded_80s/{}/soldier"
     base_config: "5"
+    pre_encoded: "1"
     offered_configs:
     - "4"
     - "3"
