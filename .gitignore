@@ -32,3 +32,4 @@ __pycache__/
 *.ply
 *log.txt
 *md5.txt
+*.log
